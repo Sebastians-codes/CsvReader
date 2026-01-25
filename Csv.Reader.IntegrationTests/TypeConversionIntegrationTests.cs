@@ -42,9 +42,7 @@ public class TypeConversionIntegrationTests
             $"Record2,{guid2},2024-02-01,,{Guid.Empty}"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -74,9 +72,7 @@ public class TypeConversionIntegrationTests
             "Record2,not-a-valid-guid,2024-02-01,,"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -101,9 +97,7 @@ public class TypeConversionIntegrationTests
             $"Record2,{guid},2024-02-01,,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -128,9 +122,7 @@ public class TypeConversionIntegrationTests
             $"Record3,{guid},01/15/2024,02/20/2024,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -162,9 +154,7 @@ public class TypeConversionIntegrationTests
             $"Record2,{guid},not-a-date,,"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -188,9 +178,7 @@ public class TypeConversionIntegrationTests
             $"Record2,{guid},2024-02-01,,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -216,9 +204,7 @@ public class TypeConversionIntegrationTests
             "Record4,bad-guid,bad-date,,"         // Both bad
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -250,9 +236,7 @@ public class TypeConversionIntegrationTests
             csvLines.Add($"Record{i},{guid},{date:yyyy-MM-dd},,");
         }
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csvLines);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csvLines);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -279,9 +263,7 @@ public class TypeConversionIntegrationTests
             $"Record1,  {guid}  ,2024-01-15,,"
         };
 
-        var options = new CsvParserOptions { TrimFields = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<AdvancedRecord>(csv);
+        var results = CsvReader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -299,11 +281,13 @@ public class TypeConversionIntegrationTests
             "Record1,not-a-guid,2024-01-15,,"
         };
 
-        var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader(options);
+        var options = new CsvParserOptions
+        {
+            StrictMode = true
+        };
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines<AdvancedRecord>(csv));
+            CsvReader.DeserializeLines<AdvancedRecord>(csv, options));
 
         Assert.Contains("Line 2", exception.Message);
         Assert.Contains("Cannot convert", exception.Message);
@@ -320,11 +304,13 @@ public class TypeConversionIntegrationTests
             $"Record1,{guid},not-a-date,,"
         };
 
-        var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader(options);
+        var options = new CsvParserOptions
+        {
+            StrictMode = true
+        };
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines<AdvancedRecord>(csv));
+            CsvReader.DeserializeLines<AdvancedRecord>(csv, options));
 
         Assert.Contains("Line 2", exception.Message);
         Assert.Contains("Cannot convert", exception.Message);

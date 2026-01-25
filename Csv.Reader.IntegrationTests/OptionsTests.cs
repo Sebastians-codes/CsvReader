@@ -33,9 +33,12 @@ public class OptionsTests
     public void Delimiter_VariousDelimiters_Work(char delimiter, string header, string dataLine)
     {
         var csv = new[] { header, dataLine };
-        var options = new CsvParserOptions { Delimiter = delimiter };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var options = new CsvParserOptions
+        {
+            Delimiter = delimiter
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -50,10 +53,13 @@ public class OptionsTests
     [Fact]
     public void HasHeaderRow_True_UsesHeaderMapping()
     {
-        var csv = new[] { "Name,Age,Active", "John,30,true" };
-        var options = new CsvParserOptions { HasHeaderRow = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "John,30,true"
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -64,10 +70,15 @@ public class OptionsTests
     [Fact]
     public void HasHeaderRow_False_UsesIndexMapping()
     {
-        var csv = new[] { "John,30,true", "Jane,25,false" };
+        var csv = new[]
+        {
+            "John,30,true",
+            "Jane,25,false"
+        };
+
         var options = new CsvParserOptions { HasHeaderRow = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -81,10 +92,16 @@ public class OptionsTests
     [Fact]
     public void SkipEmptyLines_True_SkipsEmptyLines()
     {
-        var csv = new[] { "Name,Age,Active", "", "John,30,true", "   ", "Jane,25,false" };
-        var options = new CsvParserOptions { SkipEmptyLines = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "",
+            "John,30,true",
+            "   ",
+            "Jane,25,false"
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -96,10 +113,13 @@ public class OptionsTests
     [Fact]
     public void TrimFields_True_TrimsWhitespace()
     {
-        var csv = new[] { "Name,Age,Active", "  John  ,  30  ,  true  " };
-        var options = new CsvParserOptions { TrimFields = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "  John  ,  30  ,  true  "
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -111,10 +131,14 @@ public class OptionsTests
     [Fact]
     public void TrimFields_False_PreservesWhitespace()
     {
-        var csv = new[] { "Name,Age,Active", "  John  ,30,true" };
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "  John  ,30,true"
+        };
+
         var options = new CsvParserOptions { TrimFields = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -127,10 +151,13 @@ public class OptionsTests
     [Fact]
     public void CaseInsensitiveHeaders_True_MatchesAnyCase()
     {
-        var csv = new[] { "NAME,AGE,ACTIVE", "John,30,true" };
-        var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var csv = new[]
+        {
+            "NAME,AGE,ACTIVE",
+            "John,30,true"
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -141,17 +168,21 @@ public class OptionsTests
     [Fact]
     public void CaseInsensitiveHeaders_False_StrictMode_RequiresExactCase()
     {
-        var csv = new[] { "NAME,AGE,ACTIVE", "John,30,true" };
+        var csv = new[]
+        {
+            "NAME,AGE,ACTIVE",
+            "John,30,true"
+        };
+
         var options = new CsvParserOptions
         {
             CaseInsensitiveHeaders = false,
             StrictMode = true
         };
-        var reader = new CsvReader(options);
 
         // Should fail to find columns with exact case matching in strict mode
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines<TestPerson>(csv));
+            CsvReader.DeserializeLines<TestPerson>(csv, options));
 
         Assert.Contains("not found", exception.Message);
     }
@@ -159,10 +190,14 @@ public class OptionsTests
     [Fact]
     public void CaseInsensitiveHeaders_False_ExactCaseMatch_Works()
     {
-        var csv = new[] { "Name,Age,Active", "John,30,true" };
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "John,30,true"
+        };
+
         var options = new CsvParserOptions { CaseInsensitiveHeaders = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -175,10 +210,14 @@ public class OptionsTests
     [Fact]
     public void StrictMode_False_SkipsErrors()
     {
-        var csv = new[] { "Name,Age,Active", "John,30,true", "Jane,invalid,false" };
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "John,30,true",
+            "Jane,invalid,false"
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -189,12 +228,17 @@ public class OptionsTests
     [Fact]
     public void StrictMode_True_ThrowsOnError()
     {
-        var csv = new[] { "Name,Age,Active", "John,30,true", "Jane,invalid,false" };
+        var csv = new[]
+        {
+            "Name,Age,Active",
+            "John,30,true",
+            "Jane,invalid,false"
+        };
+
         var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader(options);
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines<TestPerson>(csv));
+            CsvReader.DeserializeLines<TestPerson>(csv, options));
 
         Assert.Contains("Line 3", exception.Message);
     }
@@ -211,9 +255,8 @@ public class OptionsTests
             "Jane,25,1",
             "Bob,35,yes"
         };
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -233,6 +276,7 @@ public class OptionsTests
             "Jane,25,On",
             "Bob,35,Enabled"
         };
+
         var options = new CsvParserOptions
         {
             BooleanTruthyValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -244,8 +288,8 @@ public class OptionsTests
                 "N", "Off", "Disabled"
             }
         };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -265,9 +309,8 @@ public class OptionsTests
             "Jane,25,0",
             "Bob,35,no"
         };
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -285,6 +328,7 @@ public class OptionsTests
             "Jane,25,Off",
             "Bob,35,Disabled"
         };
+
         var options = new CsvParserOptions
         {
             BooleanTruthyValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -296,8 +340,8 @@ public class OptionsTests
                 "N", "Off", "Disabled"
             }
         };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 

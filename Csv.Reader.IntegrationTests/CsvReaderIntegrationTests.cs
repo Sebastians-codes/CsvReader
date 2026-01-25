@@ -54,9 +54,7 @@ public class CsvReaderIntegrationTests
             "Bob Johnson,35,bob@example.com"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -75,9 +73,12 @@ public class CsvReaderIntegrationTests
             "Jane Smith,25,jane@example.com"
         };
 
-        var options = new CsvParserOptions { HasHeaderRow = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var options = new CsvParserOptions
+        {
+            HasHeaderRow = false
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -96,9 +97,12 @@ public class CsvReaderIntegrationTests
             "Jane Smith;25;jane@example.com"
         };
 
-        var options = new CsvParserOptions { Delimiter = ';' };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var options = new CsvParserOptions
+        {
+            Delimiter = ';'
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -117,9 +121,7 @@ public class CsvReaderIntegrationTests
             "\"Smith, Jane\",25,jane@example.com"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -137,9 +139,7 @@ public class CsvReaderIntegrationTests
             "\"John \"\"The Boss\"\" Doe\",30,john@example.com"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -158,9 +158,7 @@ public class CsvReaderIntegrationTests
             "Bob,35,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -179,9 +177,7 @@ public class CsvReaderIntegrationTests
             "  John Doe  ,30,  john@example.com  "
         };
 
-        var options = new CsvParserOptions { TrimFields = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -199,9 +195,12 @@ public class CsvReaderIntegrationTests
             "  John Doe  ,30,  john@example.com  "
         };
 
-        var options = new CsvParserOptions { TrimFields = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var options = new CsvParserOptions
+        {
+            TrimFields = false
+        };
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -223,9 +222,7 @@ public class CsvReaderIntegrationTests
             "Bob Johnson,35,bob@example.com"
         };
 
-        var options = new CsvParserOptions { SkipEmptyLines = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -243,9 +240,7 @@ public class CsvReaderIntegrationTests
             "Doohickey,9.99,200,yes"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestProduct>(csv);
+        var results = CsvReader.DeserializeLines<TestProduct>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -273,9 +268,7 @@ public class CsvReaderIntegrationTests
             "Charlie Brown,35,charlie@example.com"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -295,11 +288,13 @@ public class CsvReaderIntegrationTests
             "\"Unclosed,25,error@example.com"
         };
 
-        var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader(options);
+        var options = new CsvParserOptions
+        {
+            StrictMode = true
+        };
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines<TestPerson>(csv));
+            CsvReader.DeserializeLines<TestPerson>(csv, options));
 
         Assert.Contains("Line 3", exception.Message);
     }
@@ -315,9 +310,7 @@ public class CsvReaderIntegrationTests
             "John Doe,30,john@example.com"
         };
 
-        var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -334,9 +327,7 @@ public class CsvReaderIntegrationTests
             "John Doe,30,john@example.com"
         };
 
-        var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -356,9 +347,7 @@ public class CsvReaderIntegrationTests
             csv.Add($"Person{i},{20 + (i % 50)},person{i}@example.com");
         }
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -377,9 +366,7 @@ public class CsvReaderIntegrationTests
             $"{longValue},30,email@example.com"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -394,9 +381,7 @@ public class CsvReaderIntegrationTests
     {
         var csv = new[] { "Name,Age,Email" };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -408,9 +393,7 @@ public class CsvReaderIntegrationTests
     {
         var csv = Array.Empty<string>();
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -422,9 +405,7 @@ public class CsvReaderIntegrationTests
     {
         var csv = new[] { "", "   ", "\t" };
 
-        var options = new CsvParserOptions { SkipEmptyLines = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -445,15 +426,7 @@ public class CsvReaderIntegrationTests
             "Charlie Brown,32,charlie@peanuts.com"
         };
 
-        var options = new CsvParserOptions
-        {
-            TrimFields = true,
-            SkipEmptyLines = true,
-            CaseInsensitiveHeaders = true
-        };
-
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
