@@ -16,17 +16,10 @@ A powerful, type-safe CSV parsing library for .NET with comprehensive error hand
 
 ## Installation
 
+Install via NuGet:
+
 ```bash
-# Clone or copy the CsvReaderCore project into your solution
-# Add a project reference to CsvReaderCore.csproj
-```
-
-## Quick Start
-
-### 1. Define Your Model
-
-```csharp
-using CsvReaderCore.Models;
+dotnet add package CsvReaderCore
 ```
 
 ## Quick Start
@@ -70,9 +63,149 @@ var csvLines = new[]
 var options = new CsvParserOptions();
 var reader = new CsvReader<Person>(options);
 var results = reader.DeserializeLines(csvLines);
+
+// Check for errors before accessing records
+if (results.HasErrors)
+{
+    foreach (var error in results.Errors)
+    {
+        Console.WriteLine($"Line {error.LineNumber}: {error.ErrorMessage}");
+    }
+}
+
+// Access the parsed records
+foreach (var person in results.Records)
+{
+    Console.WriteLine($"{person.Name} is {person.Age} years old");
+}
 ```
 
-### 2. Parse CSV Data
+## Configuration Options
+
+### CsvParserOptions
+
+```csharp
+var options = new CsvParserOptions
+{
+    // Delimiter character (default: ',')
+    Delimiter = ',',
+    
+    // First line contains headers (default: true)
+    HasHeaderRow = true,
+    
+    // Skip empty/whitespace lines (default: true)
+    SkipEmptyLines = true,
+    
+    // Trim whitespace from fields (default: true)
+    TrimFields = true,
+    
+    // Case-insensitive header matching (default: true)
+    CaseInsensitiveHeaders = true,
+    
+    // Error handling mode (default: false)
+    // false = lenient mode (collect errors)
+    // true = strict mode (throw on first error)
+    StrictMode = false,
+    
+    // Custom boolean true values (default: "true", "1", "yes")
+    BooleanTruthyValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "Y", "Yes", "T", "True", "On", "1"
+    },
+    
+    // Custom boolean false values (default: "false", "0", "no")
+    BooleanFalsyValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "N", "No", "F", "False", "Off", "0"
+    }
+};
+```
+
+## Error Handling Modes
+
+### Lenient Mode (Default)
+
+Collects all errors and continues parsing valid lines. Perfect for processing large files where you want to get as much data as possible.
+
+```csharp
+var options = new CsvParserOptions { StrictMode = false };
+var reader = new CsvReader<Person>(options);
+var results = reader.DeserializeLines(csvLines);
+
+// Must check for errors before accessing records
+if (results.HasErrors)
+{
+    Console.WriteLine($"Found {results.Errors.Count} errors:");
+    foreach (var error in results.Errors)
+    {
+        Console.WriteLine($"  Line {error.LineNumber}: {error.ErrorMessage}");
+        Console.WriteLine($"  Content: {error.LineContent}");
+    }
+}
+
+// Get successfully parsed records (may be partial if errors occurred)
+var records = results.Records;
+```
+
+### Strict Mode
+
+Throws an exception immediately on the first error. Use when data integrity is critical.
+
+```csharp
+var options = new CsvParserOptions { StrictMode = true };
+var reader = new CsvReader<Person>(options);
+
+try
+{
+    var results = reader.DeserializeLines(csvLines);
+    var records = results.Records; // Can access directly in strict mode
+}
+catch (CsvParseException ex)
+{
+    Console.WriteLine($"Error at line {ex.LineNumber}: {ex.Message}");
+}
+```
+
+## Advanced Examples
+
+### Custom Delimiter (Semicolon)
+
+```csharp
+var csv = new[]
+{
+    "Name;Age;Active",
+    "John;30;true",
+    "Jane;25;false"
+};
+
+var options = new CsvParserOptions { Delimiter = ';' };
+var reader = new CsvReader<Person>(options);
+var results = reader.DeserializeLines(csv);
+```
+
+### No Header Row (Index-Based Mapping)
+
+```csharp
+var csv = new[]
+{
+    "John,30,john@example.com",
+    "Jane,25,jane@example.com"
+};
+
+var options = new CsvParserOptions { HasHeaderRow = false };
+var reader = new CsvReader<Person>(options);
+var results = reader.DeserializeLines(csv);
+```
+
+### Reading from File
+
+```csharp
+var csvLines = File.ReadLines("data.csv");
+var reader = new CsvReader<Person>();
+var results = reader.DeserializeLines(csvLines);
+```
+
+### Using Enums, Guids, and DateTime
 
 ```csharp
 using CsvReaderCore;
@@ -103,21 +236,6 @@ var reader = new CsvReader<Task>();
 var results = reader.DeserializeLines(csv);
 
 // Enums are case-insensitive: "active", "Active", "ACTIVE" all work
-```
-
-### Logging All Errors
-
-```csharp
-var results = reader.DeserializeLines(csvLines);
-
-foreach (var error in results.Errors)
-{
-    Console.WriteLine(
-        $"CSV parse error at line {error.LineNumber}: {error.ErrorMessage}. Content: {error.LineContent}"
-    );
-}
-
-var records = results.Records;
 ```
 
 ## Supported Types
@@ -179,27 +297,6 @@ var options = new CsvParserOptions { StrictMode = true };
 var options = new CsvParserOptions { StrictMode = false };
 ```
 
-### 4. Configure Boolean Values for Your Data
-
-```csharp
-// If your CSV uses Y/N instead of true/false
-var options = new CsvParserOptions
-{
-    BooleanTruthyValues = new HashSet<string> { "Y", "Yes", "1" },
-    BooleanFalsyValues = new HashSet<string> { "N", "No", "0" }
-};
-```
-
-### 5. Return Default Implementation for Auto-Mapping
-
-```csharp
-public class SimplePerson : IMapped
-{
-    public string Name { get; set; }
-    public int Age { get; set; }
-}
-```
-
 ## Error Handling Patterns
 
 ### Pattern 1: Log and Continue
@@ -209,7 +306,7 @@ var results = reader.DeserializeLines(csvLines);
 
 foreach (var error in results.Errors)
 {
-    _logger.LogWarning($"Line {error.LineNumber}: {error.ErrorMessage}");
+    Console.WriteLine($"Line {error.LineNumber}: {error.ErrorMessage}");
 }
 
 ProcessRecords(results.Records);
@@ -246,12 +343,12 @@ ProcessRecords(results.Records);
 
 ## License
 
-[Add your license information here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
-[Add contribution guidelines here]
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-[Add support contact/links here]
+If you find any bugs or have feature requests, please create an issue on [GitHub](https://github.com/sebastians-codes/csvreader/issues).
