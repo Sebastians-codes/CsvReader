@@ -41,15 +41,12 @@ namespace Csv.Reader;
 /// var people = results.Records;
 /// </code>
 /// </example>
-public class CsvReader(
-    CsvParserOptions? options = null
-    )
+public static class CsvReader
 {
     private static readonly ConcurrentDictionary<Type, Dictionary<string, ColumnMapping>> _mappingCache = new();
-    private readonly CsvParserOptions _options = options ?? new CsvParserOptions();
-    private readonly MappingResolver _mappingResolver = new();
-    private readonly TypeConverter _typeConverter = new();
-    private readonly Parser _parser = new();
+    private static readonly MappingResolver _mappingResolver = new();
+    private static readonly TypeConverter _typeConverter = new();
+    private static readonly Parser _parser = new();
 
     /// <summary>
     /// Deserializes CSV lines into strongly-typed objects.
@@ -66,7 +63,34 @@ public class CsvReader(
     /// In strict mode, this method throws on the first error encountered.
     /// In lenient mode, errors are collected in the result and parsing continues.
     /// </remarks>
-    public CsvParseResult<T> DeserializeLines<T>(IEnumerable<string> lines) where T : IMapped, new()
+    public static CsvParseResult<T> DeserializeLines<T>(IEnumerable<string> lines) where T : IMapped, new()
+    {
+        var _options = new CsvParserOptions();
+        return Process<T>(lines, _options);
+    }
+
+    /// <summary>
+    /// Deserializes CSV lines into strongly-typed objects.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize CSV rows into. Must implement <see cref="IMapped"/> and have a parameterless constructor.</typeparam>
+    /// <param name="lines">The CSV lines to parse. First line may be a header depending on HasHeaderRow option.</param>
+    /// <param name="options">Sets the options for how the strings should be parsed.</param>
+    /// <returns>
+    /// A <see cref="CsvParseResult{T}"/> containing successfully parsed records and any errors encountered.
+    /// </returns>
+    /// <exception cref="CsvParseException">
+    /// Thrown in strict mode when any parsing error occurs (unclosed quotes, type conversion errors, etc.).
+    /// </exception>
+    /// <remarks>
+    /// In strict mode, this method throws on the first error encountered.
+    /// In lenient mode, errors are collected in the result and parsing continues.
+    /// </remarks>
+    public static CsvParseResult<T> DeserializeLines<T>(IEnumerable<string> lines, CsvParserOptions options) where T : IMapped, new()
+    {
+        return Process<T>(lines, options);
+    }
+
+    private static CsvParseResult<T> Process<T>(IEnumerable<string> lines, CsvParserOptions _options) where T : IMapped, new()
     {
         var records = new List<T>();
         var errors = new List<CsvParseError>();
@@ -119,7 +143,7 @@ public class CsvReader(
 
             if (isFirstLine && _options.HasHeaderRow)
             {
-                headerMap = BuildHeaderMap(fields);
+                headerMap = BuildHeaderMap(fields, _options);
                 isFirstLine = false;
                 continue;
             }
@@ -129,7 +153,7 @@ public class CsvReader(
             T obj;
             try
             {
-                obj = DeserializeLine<T>(fields, headerMap, lineNumber, columnMapping);
+                obj = DeserializeLine<T>(fields, headerMap, lineNumber, columnMapping, _options);
             }
             catch (CsvParseException ex)
             {
@@ -149,10 +173,10 @@ public class CsvReader(
         return new CsvParseResult<T>(records, errors, _options.StrictMode);
     }
 
-    private Dictionary<string, int> BuildHeaderMap(string[] headers)
+    private static Dictionary<string, int> BuildHeaderMap(string[] headers, CsvParserOptions options)
     {
         var map = new Dictionary<string, int>(
-            _options.CaseInsensitiveHeaders
+            options.CaseInsensitiveHeaders
                 ? StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal);
 
@@ -164,7 +188,7 @@ public class CsvReader(
         return map;
     }
 
-    private T DeserializeLine<T>(string[] fields, Dictionary<string, int>? headerMap, int lineNumber, Dictionary<string, ColumnMapping> columnMapping) where T : IMapped, new()
+    private static T DeserializeLine<T>(string[] fields, Dictionary<string, int>? headerMap, int lineNumber, Dictionary<string, ColumnMapping> columnMapping, CsvParserOptions options) where T : IMapped, new()
     {
         var obj = new T();
         var type = typeof(T);
@@ -179,13 +203,13 @@ public class CsvReader(
 
             int columnIndex = _mappingResolver.ResolveColumnIndex(columnMappingEntry, headerMap);
 
-            _mappingResolver.ValidateColumnIndex(columnIndex, fields.Length, columnMapping.Count, _options.StrictMode, lineNumber);
+            _mappingResolver.ValidateColumnIndex(columnIndex, fields.Length, columnMapping.Count, options.StrictMode, lineNumber);
 
             string fieldValue = fields[columnIndex];
 
             try
             {
-                object? convertedValue = _typeConverter.ConvertValue(fieldValue, property.PropertyType, _options);
+                object? convertedValue = _typeConverter.ConvertValue(fieldValue, property.PropertyType, options);
                 property.SetValue(obj, convertedValue);
             }
             catch (TypeConversionException)

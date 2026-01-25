@@ -36,9 +36,7 @@ public class ErrorHandlingTests
             "Alice,35,true"           // Valid - line 6
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         // Check errors before accessing records
         Assert.True(results.HasErrors);
@@ -62,9 +60,7 @@ public class ErrorHandlingTests
             "Jane,25,false"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.False(results.HasErrors);
         Assert.Empty(results.Errors);
@@ -84,9 +80,7 @@ public class ErrorHandlingTests
             "Bob,not-a-number,true"    // Error - line 4
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -111,9 +105,7 @@ public class ErrorHandlingTests
             "Dave,bad,true"            // Line 7 (error)
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.Equal(3, results.Errors.Count);
 
@@ -136,13 +128,7 @@ public class ErrorHandlingTests
             "Jane,25,false"            // Line 6 (valid)
         };
 
-        var options = new CsvParserOptions
-        {
-            StrictMode = false,
-            SkipEmptyLines = true
-        };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -162,11 +148,10 @@ public class ErrorHandlingTests
 
         var options = new CsvParserOptions
         {
-            StrictMode = false,
             SkipEmptyLines = false
         };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+
+        var results = CsvReader.DeserializeLines<TestPerson>(csv, options);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -185,9 +170,7 @@ public class ErrorHandlingTests
             "\"Unclosed quote,30,true"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -207,9 +190,7 @@ public class ErrorHandlingTests
             "John,not-a-number,true"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -230,9 +211,7 @@ public class ErrorHandlingTests
             "OnlyTwoFields,30"  // Missing third field
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -258,9 +237,7 @@ public class ErrorHandlingTests
             "Alice,45,true"            // Valid
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -291,9 +268,7 @@ public class ErrorHandlingTests
             "Bad,not-a-number,true"             // Error - preserve exact original line
         };
 
-        var options = new CsvParserOptions { StrictMode = false, TrimFields = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -316,9 +291,7 @@ public class ErrorHandlingTests
             "Bad,not-a-number,true"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         // Access Errors first (marks errors as handled)
         var errors = results.Errors;
@@ -340,9 +313,7 @@ public class ErrorHandlingTests
             "Bad,not-a-number,true"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         // Check HasErrors first (marks errors as handled)
         Assert.True(results.HasErrors);
@@ -364,9 +335,7 @@ public class ErrorHandlingTests
             "Bad2,also-bad,true"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TestPerson>(csv);
+        var results = CsvReader.DeserializeLines<TestPerson>(csv);
 
         // Common pattern: log all errors
         var errorLog = new List<string>();

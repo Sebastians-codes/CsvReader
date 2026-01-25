@@ -60,9 +60,7 @@ public class EnumAndComplexTypeTests
             $"Task2,{guid},2024-01-20,2024-01-25,Inactive,Low,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -92,9 +90,7 @@ public class EnumAndComplexTypeTests
             $"Task2,{guid},2024-01-20,,PENDING,low,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -118,9 +114,7 @@ public class EnumAndComplexTypeTests
             $"Task2,{guid},2024-01-20,,Pending,4,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -142,9 +136,7 @@ public class EnumAndComplexTypeTests
             $"Task2,{guid},2024-01-20,,InvalidStatus,Low,"
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -168,9 +160,7 @@ public class EnumAndComplexTypeTests
             $"Task2,{guid},2024-01-20,,Pending,Low,"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -196,9 +186,7 @@ public class EnumAndComplexTypeTests
             $"Task3,{Guid.Empty},2024-03-15,2024-03-20,Archived,Critical,Active"
         };
 
-        var options = new CsvParserOptions();
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -238,9 +226,7 @@ public class EnumAndComplexTypeTests
             $"Task4,{validGuid},2024-03-01,,BadEnum,Low,"   // Bad Enum
         };
 
-        var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -267,11 +253,13 @@ public class EnumAndComplexTypeTests
             $"Task1,{guid},2024-01-15,,InvalidStatus,High,"
         };
 
-        var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader(options);
+        var options = new CsvParserOptions
+        {
+            StrictMode = true
+        };
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines<TaskRecord>(csv));
+            CsvReader.DeserializeLines<TaskRecord>(csv, options));
 
         Assert.Contains("Line 2", exception.Message);
         Assert.Contains("Cannot convert", exception.Message);
@@ -288,9 +276,7 @@ public class EnumAndComplexTypeTests
             $"Task1,{guid},2024-01-15,,  Active  ,  High  ,"
         };
 
-        var options = new CsvParserOptions { TrimFields = true };
-        var reader = new CsvReader(options);
-        var results = reader.DeserializeLines<TaskRecord>(csv);
+        var results = CsvReader.DeserializeLines<TaskRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
