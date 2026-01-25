@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     
     <PackageId>Csv.Reader</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Sebastians.codes</Authors>
     <Company>Sebastians.codes</Company>
     <Description>A powerful, type-safe CSV parsing library for .NET with comprehensive error handling, support for enums, Guids, DateTimes, and flexible configuration options.</Description>

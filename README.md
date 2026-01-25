@@ -60,9 +60,7 @@ var csvLines = new[]
     "Jane Smith,25,jane@example.com"
 };
 
-var options = new CsvParserOptions();
-var reader = new CsvReader(options);
-var results = reader.DeserializeLines<Person>(csvLines);
+var results = CsvReader.DeserializeLines<Person>(csvLines);
 
 // Check for errors before accessing records
 if (results.HasErrors)
@@ -128,9 +126,7 @@ var options = new CsvParserOptions
 Collects all errors and continues parsing valid lines. Perfect for processing large files where you want to get as much data as possible.
 
 ```csharp
-var options = new CsvParserOptions { StrictMode = false };
-var reader = new CsvReader(options);
-var results = reader.DeserializeLines<Person>(csvLines);
+var results = CsvReader.DeserializeLines<Person>(csvLines);
 
 // Must check for errors before accessing records
 if (results.HasErrors)
@@ -153,11 +149,10 @@ Throws an exception immediately on the first error. Use when data integrity is c
 
 ```csharp
 var options = new CsvParserOptions { StrictMode = true };
-var reader = new CsvReader(options);
 
 try
 {
-    var results = reader.DeserializeLines<Person>(csvLines);
+    var results = CsvReader.DeserializeLines<Person>(csvLines);
     var records = results.Records; // Can access directly in strict mode
 }
 catch (CsvParseException ex)
@@ -179,8 +174,7 @@ var csv = new[]
 };
 
 var options = new CsvParserOptions { Delimiter = ';' };
-var reader = new CsvReader(options);
-var results = reader.DeserializeLines<Person>(csv);
+var results = CsvReader.DeserializeLines<Person>(csv, options);
 ```
 
 ### No Header Row (Index-Based Mapping)
@@ -193,16 +187,7 @@ var csv = new[]
 };
 
 var options = new CsvParserOptions { HasHeaderRow = false };
-var reader = new CsvReader(options);
-var results = reader.DeserializeLines<Person>(csv);
-```
-
-### Reading from File
-
-```csharp
-var csvLines = File.ReadLines("data.csv");
-var reader = new CsvReader();
-var results = reader.DeserializeLines<Person>(csvLines);
+var results = CsvReader.DeserializeLines<Person>(csv, options);
 ```
 
 ### Using Enums, Guids, and DateTime
@@ -232,8 +217,7 @@ var csv = new[]
     "660e8400-e29b-41d4-a716-446655440001,Other Task,2024-02-01,,Pending"
 };
 
-var reader = new CsvReader();
-var results = reader.DeserializeLines<Task>(csv);
+var results = CsvReader.DeserializeLines<Task>(csv);
 
 // Enums are case-insensitive: "active", "Active", "ACTIVE" all work
 ```
@@ -269,7 +253,7 @@ In **Lenient Mode**, errors are captured as `CsvParseError` objects within the r
 ### 1. Always Check for Errors in Lenient Mode
 
 ```csharp
-var results = reader.DeserializeLines(csvLines);
+var results = CsvReader.DeserializeLines(csvLines);
 
 // ✅ Good - check for errors
 if (results.HasErrors)
@@ -302,7 +286,7 @@ var options = new CsvParserOptions { StrictMode = false };
 ### Pattern 1: Log and Continue
 
 ```csharp
-var results = reader.DeserializeLines(csvLines);
+var results = CsvReader.DeserializeLines(csvLines);
 
 foreach (var error in results.Errors)
 {
@@ -315,7 +299,7 @@ ProcessRecords(results.Records);
 ### Pattern 2: Fail if Too Many Errors
 
 ```csharp
-var results = reader.DeserializeLines(csvLines);
+var results = CsvReader.DeserializeLines(csvLines);
 
 if (results.Errors.Count > MAX_ALLOWED_ERRORS)
 {
@@ -328,7 +312,7 @@ ProcessRecords(results.Records);
 ### Pattern 3: Collect Error Report
 
 ```csharp
-var results = reader.DeserializeLines(csvLines);
+var results = CsvReader.DeserializeLines(csvLines);
 
 var errorReport = results.Errors.Select(e => new
 {
