@@ -61,8 +61,8 @@ var csvLines = new[]
 };
 
 var options = new CsvParserOptions();
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csvLines);
+var reader = new CsvReader(options);
+var results = reader.DeserializeLines<Person>(csvLines);
 
 // Check for errors before accessing records
 if (results.HasErrors)
@@ -129,8 +129,8 @@ Collects all errors and continues parsing valid lines. Perfect for processing la
 
 ```csharp
 var options = new CsvParserOptions { StrictMode = false };
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csvLines);
+var reader = new CsvReader(options);
+var results = reader.DeserializeLines<Person>(csvLines);
 
 // Must check for errors before accessing records
 if (results.HasErrors)
@@ -153,11 +153,11 @@ Throws an exception immediately on the first error. Use when data integrity is c
 
 ```csharp
 var options = new CsvParserOptions { StrictMode = true };
-var reader = new CsvReader<Person>(options);
+var reader = new CsvReader(options);
 
 try
 {
-    var results = reader.DeserializeLines(csvLines);
+    var results = reader.DeserializeLines<Person>(csvLines);
     var records = results.Records; // Can access directly in strict mode
 }
 catch (CsvParseException ex)
@@ -179,8 +179,8 @@ var csv = new[]
 };
 
 var options = new CsvParserOptions { Delimiter = ';' };
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csv);
+var reader = new CsvReader(options);
+var results = reader.DeserializeLines<Person>(csv);
 ```
 
 ### No Header Row (Index-Based Mapping)
@@ -193,16 +193,16 @@ var csv = new[]
 };
 
 var options = new CsvParserOptions { HasHeaderRow = false };
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csv);
+var reader = new CsvReader(options);
+var results = reader.DeserializeLines<Person>(csv);
 ```
 
 ### Reading from File
 
 ```csharp
 var csvLines = File.ReadLines("data.csv");
-var reader = new CsvReader<Person>();
-var results = reader.DeserializeLines(csvLines);
+var reader = new CsvReader();
+var results = reader.DeserializeLines<Person>(csvLines);
 ```
 
 ### Using Enums, Guids, and DateTime
@@ -232,8 +232,8 @@ var csv = new[]
     "660e8400-e29b-41d4-a716-446655440001,Other Task,2024-02-01,,Pending"
 };
 
-var reader = new CsvReader<Task>();
-var results = reader.DeserializeLines(csv);
+var reader = new CsvReader();
+var results = reader.DeserializeLines<Task>(csv);
 
 // Enums are case-insensitive: "active", "Active", "ACTIVE" all work
 ```

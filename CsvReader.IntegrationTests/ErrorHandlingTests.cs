@@ -38,8 +38,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         // Check errors before accessing records
         Assert.True(results.HasErrors);
@@ -64,8 +64,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.False(results.HasErrors);
         Assert.Empty(results.Errors);
@@ -86,8 +86,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -113,8 +113,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.Equal(3, results.Errors.Count);
 
@@ -142,8 +142,8 @@ public class ErrorHandlingTests
             StrictMode = false,
             SkipEmptyLines = true
         };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -166,8 +166,8 @@ public class ErrorHandlingTests
             StrictMode = false,
             SkipEmptyLines = false
         };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -187,8 +187,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -209,8 +209,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -232,8 +232,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -260,8 +260,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -293,8 +293,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false, TrimFields = true };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -318,8 +318,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         // Access Errors first (marks errors as handled)
         var errors = results.Errors;
@@ -342,8 +342,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         // Check HasErrors first (marks errors as handled)
         Assert.True(results.HasErrors);
@@ -366,8 +366,8 @@ public class ErrorHandlingTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
 
         // Common pattern: log all errors
         var errorLog = new List<string>();

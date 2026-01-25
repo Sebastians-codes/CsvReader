@@ -44,8 +44,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -76,8 +76,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -103,8 +103,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -130,8 +130,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -164,8 +164,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Single(results.Errors);
@@ -190,8 +190,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -218,8 +218,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         Assert.True(results.HasErrors);
         Assert.Equal(3, results.Errors.Count);
@@ -252,8 +252,8 @@ public class TypeConversionIntegrationTests
         }
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csvLines);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csvLines);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -281,8 +281,8 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions { TrimFields = true };
-        var reader = new CsvReader<AdvancedRecord>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<AdvancedRecord>(csv);
 
         _ = results.HasErrors;
         var records = results.Records.ToList();
@@ -301,10 +301,10 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader<AdvancedRecord>(options);
+        var reader = new CsvReaderCore.CsvReader(options);
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines(csv));
+            reader.DeserializeLines<AdvancedRecord>(csv));
 
         Assert.Contains("Line 2", exception.Message);
         Assert.Contains("Cannot convert", exception.Message);
@@ -322,10 +322,10 @@ public class TypeConversionIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader<AdvancedRecord>(options);
+        var reader = new CsvReaderCore.CsvReader(options);
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines(csv));
+            reader.DeserializeLines<AdvancedRecord>(csv));
 
         Assert.Contains("Line 2", exception.Message);
         Assert.Contains("Cannot convert", exception.Message);

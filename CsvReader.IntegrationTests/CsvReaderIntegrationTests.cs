@@ -56,8 +56,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -77,8 +77,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { HasHeaderRow = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -98,8 +98,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { Delimiter = ';' };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -119,8 +119,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -139,8 +139,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -160,8 +160,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -181,8 +181,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { TrimFields = true };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -201,8 +201,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { TrimFields = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -225,8 +225,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { SkipEmptyLines = true };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -245,8 +245,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestProduct>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestProduct>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -275,8 +275,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = false };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -297,10 +297,10 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { StrictMode = true };
-        var reader = new CsvReader<TestPerson>(options);
+        var reader = new CsvReaderCore.CsvReader(options);
 
         var exception = Assert.Throws<CsvParseException>(() =>
-            reader.DeserializeLines(csv));
+            reader.DeserializeLines<TestPerson>(csv));
 
         Assert.Contains("Line 3", exception.Message);
     }
@@ -317,8 +317,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -336,8 +336,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -358,8 +358,8 @@ public class CsvReaderIntegrationTests
         }
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -379,8 +379,8 @@ public class CsvReaderIntegrationTests
         };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -396,8 +396,8 @@ public class CsvReaderIntegrationTests
         var csv = new[] { "Name,Age,Email" };
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -410,8 +410,8 @@ public class CsvReaderIntegrationTests
         var csv = Array.Empty<string>();
 
         var options = new CsvParserOptions();
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -424,8 +424,8 @@ public class CsvReaderIntegrationTests
         var csv = new[] { "", "   ", "\t" };
 
         var options = new CsvParserOptions { SkipEmptyLines = true };
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 
@@ -453,8 +453,8 @@ public class CsvReaderIntegrationTests
             CaseInsensitiveHeaders = true
         };
 
-        var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv);
+        var reader = new CsvReaderCore.CsvReader(options);
+        var results = reader.DeserializeLines<TestPerson>(csv);
         _ = results.HasErrors;
         var records = results.Records.ToList();
 

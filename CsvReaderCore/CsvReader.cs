@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Collections.Concurrent;
 using CsvReaderCore.Mapping;
 using CsvReaderCore.Errors;
 using CsvReaderCore.Models;
@@ -9,7 +10,6 @@ namespace CsvReaderCore;
 /// <summary>
 /// A CSV reader that deserializes CSV data into strongly-typed objects.
 /// </summary>
-/// <typeparam name="T">The type to deserialize CSV rows into. Must implement <see cref="IMapped"/> and have a parameterless constructor.</typeparam>
 /// <remarks>
 /// This CSV reader supports:
 /// - Custom delimiters (comma, semicolon, tab, pipe, etc.)
@@ -29,8 +29,8 @@ namespace CsvReaderCore;
 /// <code>
 /// // Basic usage with default options
 /// var options = new CsvParserOptions();
-/// var reader = new CsvReader&lt;Person&gt;(options);
-/// var results = reader.DeserializeLines(csvLines);
+/// var reader = new CsvReader(options);
+/// var results = reader.DeserializeLines&lt;Person&gt;(csvLines);
 /// 
 /// if (results.HasErrors) 
 /// {
@@ -41,11 +41,11 @@ namespace CsvReaderCore;
 /// var people = results.Records;
 /// </code>
 /// </example>
-public class CsvReader<T>(
+public class CsvReader(
     CsvParserOptions? options = null
-    ) where T : IMapped, new()
+    )
 {
-    private readonly Dictionary<string, ColumnMapping> _columnMapping = GetOrCreateMapping();
+    private static readonly ConcurrentDictionary<Type, Dictionary<string, ColumnMapping>> _mappingCache = new();
     private readonly CsvParserOptions _options = options ?? new CsvParserOptions();
     private readonly MappingResolver _mappingResolver = new();
     private readonly TypeConverter _typeConverter = new();
@@ -54,6 +54,7 @@ public class CsvReader<T>(
     /// <summary>
     /// Deserializes CSV lines into strongly-typed objects.
     /// </summary>
+    /// <typeparam name="T">The type to deserialize CSV rows into. Must implement <see cref="IMapped"/> and have a parameterless constructor.</typeparam>
     /// <param name="lines">The CSV lines to parse. First line may be a header depending on HasHeaderRow option.</param>
     /// <returns>
     /// A <see cref="CsvParseResult{T}"/> containing successfully parsed records and any errors encountered.
@@ -65,10 +66,11 @@ public class CsvReader<T>(
     /// In strict mode, this method throws on the first error encountered.
     /// In lenient mode, errors are collected in the result and parsing continues.
     /// </remarks>
-    public CsvParseResult<T> DeserializeLines(IEnumerable<string> lines)
+    public CsvParseResult<T> DeserializeLines<T>(IEnumerable<string> lines) where T : IMapped, new()
     {
         var records = new List<T>();
         var errors = new List<CsvParseError>();
+        var columnMapping = GetOrCreateMapping<T>();
         Dictionary<string, int>? headerMap = null;
         bool isFirstLine = true;
         int lineNumber = 0;
@@ -127,7 +129,7 @@ public class CsvReader<T>(
             T obj;
             try
             {
-                obj = DeserializeLine(fields, headerMap, lineNumber);
+                obj = DeserializeLine<T>(fields, headerMap, lineNumber, columnMapping);
             }
             catch (CsvParseException ex)
             {
@@ -162,22 +164,22 @@ public class CsvReader<T>(
         return map;
     }
 
-    private T DeserializeLine(string[] fields, Dictionary<string, int>? headerMap, int lineNumber)
+    private T DeserializeLine<T>(string[] fields, Dictionary<string, int>? headerMap, int lineNumber, Dictionary<string, ColumnMapping> columnMapping) where T : IMapped, new()
     {
         var obj = new T();
         var type = typeof(T);
 
-        foreach (var mapping in _columnMapping)
+        foreach (var mapping in columnMapping)
         {
             string propertyName = mapping.Key;
-            ColumnMapping columnMapping = mapping.Value;
+            ColumnMapping columnMappingEntry = mapping.Value;
 
             PropertyInfo? property = type.GetProperty(propertyName) ??
                 throw new PropertyNotFoundException(propertyName, type);
 
-            int columnIndex = _mappingResolver.ResolveColumnIndex(columnMapping, headerMap);
+            int columnIndex = _mappingResolver.ResolveColumnIndex(columnMappingEntry, headerMap);
 
-            _mappingResolver.ValidateColumnIndex(columnIndex, fields.Length, _columnMapping.Count, _options.StrictMode, lineNumber);
+            _mappingResolver.ValidateColumnIndex(columnIndex, fields.Length, columnMapping.Count, _options.StrictMode, lineNumber);
 
             string fieldValue = fields[columnIndex];
 
@@ -199,22 +201,26 @@ public class CsvReader<T>(
         return obj;
     }
 
-    internal static Dictionary<string, ColumnMapping> GetOrCreateMapping()
+    internal static Dictionary<string, ColumnMapping> GetOrCreateMapping<T>() where T : IMapped, new()
     {
-        var mapping = new T().GetColumnMapping();
-
-        if (mapping.Count == 0)
+        return _mappingCache.GetOrAdd(typeof(T), _ =>
         {
-            var properties = typeof(T).GetProperties(
-                BindingFlags.Public | BindingFlags.Instance);
+            var mapping = new T().GetColumnMapping();
 
-            for (int i = 0; i < properties.Length; i++)
+            if (mapping.Count == 0)
             {
-                var propName = properties[i].Name;
-                mapping[propName] = new ColumnMapping(propName, i);
-            }
-        }
+                var properties = typeof(T).GetProperties(
+                    BindingFlags.Public | BindingFlags.Instance);
 
-        return mapping;
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    var propName = properties[i].Name;
+                    mapping[propName] = new ColumnMapping(propName, i);
+                }
+            }
+
+            return mapping;
+        });
     }
 }
+
