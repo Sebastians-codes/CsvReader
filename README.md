@@ -17,8 +17,8 @@ A powerful, type-safe CSV parsing library for .NET with comprehensive error hand
 ## Installation
 
 ```bash
-# Clone or copy the CsvReader project into your solution
-# Add a project reference to CsvReader.csproj
+# Clone or copy the CsvReaderCore project into your solution
+# Add a project reference to CsvReaderCore.csproj
 ```
 
 ## Quick Start
@@ -26,7 +26,15 @@ A powerful, type-safe CSV parsing library for .NET with comprehensive error hand
 ### 1. Define Your Model
 
 ```csharp
-using CsvReader.Models;
+using CsvReaderCore.Models;
+```
+
+## Quick Start
+
+### 1. Define Your Model
+
+```csharp
+using CsvReaderCore.Models;
 
 public class Person : IMapped
 {
@@ -49,8 +57,8 @@ public class Person : IMapped
 ### 2. Parse CSV Data
 
 ```csharp
-using CsvReader;
-using CsvReader.Models;
+using CsvReaderCore;
+using CsvReaderCore.Models;
 
 var csvLines = new[]
 {
@@ -62,165 +70,14 @@ var csvLines = new[]
 var options = new CsvParserOptions();
 var reader = new CsvReader<Person>(options);
 var results = reader.DeserializeLines(csvLines);
-
-// Check for errors before accessing records
-if (results.HasErrors)
-{
-    foreach (var error in results.Errors)
-    {
-        Console.WriteLine($"Line {error.LineNumber}: {error.ErrorMessage}");
-    }
-}
-
-// Access the parsed records
-foreach (var person in results.Records)
-{
-    Console.WriteLine($"{person.Name} is {person.Age} years old");
-}
 ```
 
-## Configuration Options
-
-### CsvParserOptions
+### 2. Parse CSV Data
 
 ```csharp
-var options = new CsvParserOptions
-{
-    // Delimiter character (default: ',')
-    Delimiter = ',',
-    
-    // First line contains headers (default: true)
-    HasHeaderRow = true,
-    
-    // Skip empty/whitespace lines (default: true)
-    SkipEmptyLines = true,
-    
-    // Trim whitespace from fields (default: true)
-    TrimFields = true,
-    
-    // Case-insensitive header matching (default: true)
-    CaseInsensitiveHeaders = true,
-    
-    // Error handling mode (default: false)
-    // false = lenient mode (collect errors)
-    // true = strict mode (throw on first error)
-    StrictMode = false,
-    
-    // Custom boolean true values (default: "true", "1", "yes")
-    BooleanTruthyValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "Y", "Yes", "T", "True", "On", "1"
-    },
-    
-    // Custom boolean false values (default: "false", "0", "no")
-    BooleanFalsyValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "N", "No", "F", "False", "Off", "0"
-    }
-};
-```
+using CsvReaderCore;
+using CsvReaderCore.Models;
 
-## Error Handling Modes
-
-### Lenient Mode (Default)
-
-Collects all errors and continues parsing valid lines. Perfect for processing large files where you want to get as much data as possible.
-
-```csharp
-var options = new CsvParserOptions { StrictMode = false };
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csvLines);
-
-// Must check for errors before accessing records
-if (results.HasErrors)
-{
-    Console.WriteLine($"Found {results.Errors.Count} errors:");
-    foreach (var error in results.Errors)
-    {
-        Console.WriteLine($"  Line {error.LineNumber}: {error.ErrorMessage}");
-        Console.WriteLine($"  Content: {error.LineContent}");
-    }
-}
-
-// Get successfully parsed records (may be partial if errors occurred)
-var records = results.Records;
-```
-
-### Strict Mode
-
-Throws an exception immediately on the first error. Use when data integrity is critical.
-
-```csharp
-var options = new CsvParserOptions { StrictMode = true };
-var reader = new CsvReader<Person>(options);
-
-try
-{
-    var results = reader.DeserializeLines(csvLines);
-    var records = results.Records; // Can access directly in strict mode
-}
-catch (CsvParseException ex)
-{
-    Console.WriteLine($"Error at line {ex.LineNumber}: {ex.Message}");
-}
-```
-
-## Advanced Examples
-
-### Custom Delimiter (Semicolon)
-
-```csharp
-var csv = new[]
-{
-    "Name;Age;Active",
-    "John;30;true",
-    "Jane;25;false"
-};
-
-var options = new CsvParserOptions { Delimiter = ';' };
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csv);
-```
-
-### No Header Row (Index-Based Mapping)
-
-```csharp
-var csv = new[]
-{
-    "John,30,john@example.com",
-    "Jane,25,jane@example.com"
-};
-
-var options = new CsvParserOptions { HasHeaderRow = false };
-var reader = new CsvReader<Person>(options);
-var results = reader.DeserializeLines(csv);
-```
-
-### Case-Sensitive Headers
-
-```csharp
-var options = new CsvParserOptions { CaseInsensitiveHeaders = false };
-// Now "NAME" and "Name" are treated as different columns
-```
-
-### Preserve Whitespace
-
-```csharp
-var options = new CsvParserOptions { TrimFields = false };
-// Spaces in "  John  " are preserved
-```
-
-### Reading from File
-
-```csharp
-var csvLines = File.ReadLines("data.csv");
-var reader = new CsvReader<Person>();
-var results = reader.DeserializeLines(csvLines);
-```
-
-### Using Enums, Guids, and DateTime
-
-```csharp
 public enum TaskStatus { Active, Inactive, Pending }
 
 public class Task : IMapped
@@ -231,17 +88,8 @@ public class Task : IMapped
     public DateTime? CompletedAt { get; set; }
     public TaskStatus Status { get; set; }
     
-    public Dictionary<string, ColumnMapping> GetColumnMapping()
-    {
-        return new Dictionary<string, ColumnMapping>
-        {
-            { nameof(TaskId), new ColumnMapping("TaskId", 0) },
-            { nameof(Name), new ColumnMapping("Name", 1) },
-            { nameof(CreatedAt), new ColumnMapping("CreatedAt", 2) },
-            { nameof(CompletedAt), new ColumnMapping("CompletedAt", 3) },
-            { nameof(Status), new ColumnMapping("Status", 4) }
-        };
-    }
+    // Automatic mapping by index/order is used if GetColumnMapping is not overridden
+    // or returns an empty dictionary.
 }
 
 var csv = new[]
@@ -264,11 +112,8 @@ var results = reader.DeserializeLines(csvLines);
 
 foreach (var error in results.Errors)
 {
-    _logger.LogWarning(
-        "CSV parse error at line {LineNumber}: {Message}. Content: {Content}",
-        error.LineNumber,
-        error.ErrorMessage,
-        error.LineContent
+    Console.WriteLine(
+        $"CSV parse error at line {error.LineNumber}: {error.ErrorMessage}. Content: {error.LineContent}"
     );
 }
 
@@ -285,23 +130,21 @@ The library supports automatic type conversion for:
 - `char`
 - `DateTime`
 - `Guid`
-- `Enum`
+- `Enum` (case-insensitive, supports numeric values)
 - Nullable versions of all above types
 
 ## Custom Exceptions
 
-The library provides specific exception types for different error scenarios:
+The library uses a unified exception hierarchy for error handling:
 
-- **`CsvParseException`** - Base exception for all CSV errors
-- **`UnclosedQuoteException`** - Unclosed quote in field
-- **`TypeConversionException`** - Failed type conversion
-- **`ColumnNotFoundException`** - Column not found in header
-- **`ColumnIndexOutOfRangeException`** - Column index out of range
-- **`EmptyLineException`** - Empty line encountered
-- **`ErrorsNotHandledException`** - Records accessed without checking errors (lenient mode only)
-- **`PropertyNotFoundException`** - Property not found on target type
+- **`CsvParseException`** - The primary exception thrown for all CSV parsing errors.
 
-All exceptions include relevant context like line numbers, column names, and error details.
+In **Strict Mode**, `CsvParseException` is thrown immediately on the first error encountered. The exception object includes:
+- `LineNumber`: The 1-based line number where the error occurred.
+- `Message`: A descriptive error message.
+- `InnerException`: The underlying cause (e.g., a `FormatException` or `ArgumentException`).
+
+In **Lenient Mode**, errors are captured as `CsvParseError` objects within the result, which provide similar contextual information without stopping the parsing process.
 
 ## Best Practices
 
@@ -313,11 +156,12 @@ var results = reader.DeserializeLines(csvLines);
 // ✅ Good - check for errors
 if (results.HasErrors)
 {
-    // Handle errors
+    // Handle or log results.Errors
 }
 var records = results.Records;
 
-// ❌ Bad - will throw ErrorsNotHandledException if there are any errors
+// ❌ Bad - will throw ErrorsNotHandledException (internal but caught as CsvParseException)
+// if there are any errors and you haven't checked HasErrors or Errors first.
 var records = results.Records;
 ```
 

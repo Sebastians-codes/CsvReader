@@ -1,4 +1,4 @@
-namespace CsvReader.Models;
+namespace CsvReaderCore.Models;
 
 /// <summary>
 /// Represents a parsing error that occurred on a specific CSV line.

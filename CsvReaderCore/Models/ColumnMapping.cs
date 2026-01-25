@@ -1,4 +1,4 @@
-namespace CsvReader.Models;
+namespace CsvReaderCore.Models;
 
 /// <summary>
 /// Represents the mapping between a CSV column and a property.

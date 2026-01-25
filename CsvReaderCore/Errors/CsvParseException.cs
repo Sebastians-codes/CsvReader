@@ -1,4 +1,4 @@
-namespace CsvReader.Errors;
+namespace CsvReaderCore.Errors;
 
 /// <summary>
 /// Base exception for all CSV parsing related errors.

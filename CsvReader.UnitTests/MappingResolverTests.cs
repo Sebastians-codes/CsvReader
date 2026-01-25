@@ -1,6 +1,6 @@
-using CsvReader.Errors;
-using CsvReader.Mapping;
-using CsvReader.Models;
+using CsvReaderCore.Errors;
+using CsvReaderCore.Mapping;
+using CsvReaderCore.Models;
 
 namespace CsvReader.UnitTests;
 

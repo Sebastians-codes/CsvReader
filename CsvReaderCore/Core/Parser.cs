@@ -1,11 +1,11 @@
 using System.Text;
-using CsvReader.Errors;
+using CsvReaderCore.Errors;
 
-namespace CsvReader.Core;
+namespace CsvReaderCore.Core;
 
-public class Parser
+internal class Parser
 {
-    public string[] ParseLine(string line, char delimiter = ',')
+    internal string[] ParseLine(string line, char delimiter = ',')
     {
         var fields = new List<string>();
         var currentField = new StringBuilder();

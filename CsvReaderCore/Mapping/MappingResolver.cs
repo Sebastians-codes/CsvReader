@@ -1,11 +1,11 @@
-using CsvReader.Errors;
-using CsvReader.Models;
+using CsvReaderCore.Errors;
+using CsvReaderCore.Models;
 
-namespace CsvReader.Mapping;
+namespace CsvReaderCore.Mapping;
 
-public class MappingResolver
+internal class MappingResolver
 {
-    public int ResolveColumnIndex(
+    internal int ResolveColumnIndex(
         ColumnMapping mapping,
         Dictionary<string, int>? headerMap)
     {
@@ -34,7 +34,7 @@ public class MappingResolver
         return columnIndex;
     }
 
-    public void ValidateColumnIndex(int columnIndex, int fieldCount, int mappingCount, bool strictMode, int lineNumber)
+    internal void ValidateColumnIndex(int columnIndex, int fieldCount, int mappingCount, bool strictMode, int lineNumber)
     {
         if (columnIndex < 0 || columnIndex >= fieldCount)
         {

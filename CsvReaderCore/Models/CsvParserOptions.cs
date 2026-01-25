@@ -1,4 +1,4 @@
-namespace CsvReader.Models;
+namespace CsvReaderCore.Models;
 
 /// <summary>
 /// Configuration options for CSV parsing behavior.

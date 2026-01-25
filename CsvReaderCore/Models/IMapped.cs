@@ -1,4 +1,4 @@
-namespace CsvReader.Models;
+namespace CsvReaderCore.Models;
 
 /// <summary>
 /// Interface for types that can be deserialized from CSV data.

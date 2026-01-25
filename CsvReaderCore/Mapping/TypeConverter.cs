@@ -1,11 +1,11 @@
-using CsvReader.Errors;
-using CsvReader.Models;
+using CsvReaderCore.Errors;
+using CsvReaderCore.Models;
 
-namespace CsvReader.Mapping;
+namespace CsvReaderCore.Mapping;
 
-public class TypeConverter
+internal class TypeConverter
 {
-    public object? ConvertValue(string value, Type targetType, CsvParserOptions options)
+    internal object? ConvertValue(string value, Type targetType, CsvParserOptions options)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -37,7 +37,7 @@ public class TypeConverter
                 nameof(Double) => double.Parse(value),
                 nameof(Decimal) => decimal.Parse(value),
                 nameof(Boolean) => ParseBoolean(value, options),
-                _ => underlyingType.IsEnum 
+                _ => underlyingType.IsEnum
                     ? Enum.Parse(underlyingType, value, ignoreCase: true)
                     : throw new TypeConversionException(value, underlyingType)
             };
@@ -52,7 +52,7 @@ public class TypeConverter
         }
     }
 
-    public static bool ParseBoolean(string value, CsvParserOptions options)
+    internal static bool ParseBoolean(string value, CsvParserOptions options)
     {
         if (options.BooleanTruthyValues.Contains(value))
         {
@@ -67,7 +67,7 @@ public class TypeConverter
         throw new TypeConversionException(value, typeof(bool));
     }
 
-    public static bool IsNullableType(Type type)
+    internal static bool IsNullableType(Type type)
     {
         return Nullable.GetUnderlyingType(type) != null;
     }

@@ -1,5 +1,6 @@
-using CsvReader.Errors;
-using CsvReader.Models;
+using CsvReaderCore;
+using CsvReaderCore.Errors;
+using CsvReaderCore.Models;
 
 namespace CsvReader.IntegrationTests;
 

@@ -1,7 +1,7 @@
-using CsvReader.Core;
-using CsvReader.Errors;
+using CsvReaderCore.Core;
+using CsvReaderCore.Errors;
 
-namespace CsvReader.Tests;
+namespace CsvReader.UnitTests;
 
 public class ParserTests
 {

@@ -1,10 +1,10 @@
 using System.Reflection;
-using CsvReader.Mapping;
-using CsvReader.Core;
-using CsvReader.Errors;
-using CsvReader.Models;
+using CsvReaderCore.Mapping;
+using CsvReaderCore.Errors;
+using CsvReaderCore.Models;
+using CsvReaderCore.Core;
 
-namespace CsvReader;
+namespace CsvReaderCore;
 
 /// <summary>
 /// A CSV reader that deserializes CSV data into strongly-typed objects.
@@ -199,7 +199,7 @@ public class CsvReader<T>(
         return obj;
     }
 
-    public static Dictionary<string, ColumnMapping> GetOrCreateMapping()
+    internal static Dictionary<string, ColumnMapping> GetOrCreateMapping()
     {
         var mapping = new T().GetColumnMapping();
 

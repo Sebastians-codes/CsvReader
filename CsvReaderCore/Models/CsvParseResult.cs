@@ -1,6 +1,6 @@
-using CsvReader.Errors;
+using CsvReaderCore.Errors;
 
-namespace CsvReader.Models;
+namespace CsvReaderCore.Models;
 
 /// <summary>
 /// Represents the result of a CSV parsing operation, containing both successfully parsed records and any errors encountered.
