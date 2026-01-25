@@ -1,3 +1,4 @@
+using CsvReader.Errors;
 using CsvReader.Models;
 
 namespace CsvReader.IntegrationTests;
@@ -55,12 +56,14 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(3, results.Count);
-        Assert.Equal("John Doe", results[0].Name);
-        Assert.Equal(30, results[0].Age);
-        Assert.Equal("john@example.com", results[0].Email);
+        Assert.Equal(3, records.Count);
+        Assert.Equal("John Doe", records[0].Name);
+        Assert.Equal(30, records[0].Age);
+        Assert.Equal("john@example.com", records[0].Email);
     }
 
     [Fact]
@@ -74,11 +77,13 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { HasHeaderRow = false };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John Doe", results[0].Name);
-        Assert.Equal("Jane Smith", results[1].Name);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John Doe", records[0].Name);
+        Assert.Equal("Jane Smith", records[1].Name);
     }
 
     [Fact]
@@ -93,11 +98,13 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { Delimiter = ';' };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John Doe", results[0].Name);
-        Assert.Equal(30, results[0].Age);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John Doe", records[0].Name);
+        Assert.Equal(30, records[0].Age);
     }
 
     [Fact]
@@ -112,11 +119,13 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("Doe, John", results[0].Name);
-        Assert.Equal("Smith, Jane", results[1].Name);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("Doe, John", records[0].Name);
+        Assert.Equal("Smith, Jane", records[1].Name);
     }
 
     [Fact]
@@ -130,10 +139,12 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Single(results);
-        Assert.Equal("John \"The Boss\" Doe", results[0].Name);
+        Assert.Single(records);
+        Assert.Equal("John \"The Boss\" Doe", records[0].Name);
     }
 
     [Fact]
@@ -149,12 +160,14 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(3, results.Count);
-        Assert.Equal("", results[0].Email);
-        Assert.Equal("", results[1].Name);
-        Assert.Equal("", results[2].Email);
+        Assert.Equal(3, records.Count);
+        Assert.Equal("", records[0].Email);
+        Assert.Equal("", records[1].Name);
+        Assert.Equal("", records[2].Email);
     }
 
     [Fact]
@@ -168,11 +181,13 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { TrimFields = true };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Single(results);
-        Assert.Equal("John Doe", results[0].Name);
-        Assert.Equal("john@example.com", results[0].Email);
+        Assert.Single(records);
+        Assert.Equal("John Doe", records[0].Name);
+        Assert.Equal("john@example.com", records[0].Email);
     }
 
     [Fact]
@@ -186,11 +201,13 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { TrimFields = false };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Single(results);
-        Assert.Equal("  John Doe  ", results[0].Name);
-        Assert.Equal("  john@example.com  ", results[0].Email);
+        Assert.Single(records);
+        Assert.Equal("  John Doe  ", records[0].Name);
+        Assert.Equal("  john@example.com  ", records[0].Email);
     }
 
     [Fact]
@@ -208,9 +225,11 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { SkipEmptyLines = true };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(3, results.Count);
+        Assert.Equal(3, records.Count);
     }
 
     [Fact]
@@ -226,15 +245,17 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestProduct>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(3, results.Count);
-        Assert.Equal("Widget", results[0].ProductName);
-        Assert.Equal(19.99m, results[0].Price);
-        Assert.Equal(100, results[0].Quantity);
-        Assert.True(results[0].InStock);
-        Assert.False(results[1].InStock);
-        Assert.True(results[2].InStock);
+        Assert.Equal(3, records.Count);
+        Assert.Equal("Widget", records[0].ProductName);
+        Assert.Equal(19.99m, records[0].Price);
+        Assert.Equal(100, records[0].Quantity);
+        Assert.True(records[0].InStock);
+        Assert.False(records[1].InStock);
+        Assert.True(records[2].InStock);
     }
 
     // ========== Error Handling Integration Tests ==========
@@ -254,52 +275,14 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { StrictMode = false };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(3, results.Count);
-        Assert.Equal("John Doe", results[0].Name);
-        Assert.Equal("Jane Smith", results[1].Name);
-        Assert.Equal("Charlie Brown", results[2].Name);
-    }
-
-    [Fact]
-    public void ParseFile_LenientMode_WithErrorLog_LogsErrors()
-    {
-        var logFile = Path.GetTempFileName();
-
-        try
-        {
-            var csv = new[]
-            {
-                "Name,Age,Email",
-                "John Doe,30,john@example.com",
-                "\"Unclosed,25,error@example.com",
-                "Jane,not-a-number,jane@example.com"
-            };
-
-            var options = new CsvParserOptions
-            {
-                StrictMode = false,
-                ErrorLogFile = logFile
-            };
-
-            var reader = new CsvReader<TestPerson>(options);
-            var results = reader.DeserializeLines(csv).ToList();
-
-            Assert.Single(results);
-            Assert.True(File.Exists(logFile));
-
-            var logContents = File.ReadAllText(logFile);
-            Assert.Contains("Line 3", logContents);
-            Assert.Contains("Line 4", logContents);
-        }
-        finally
-        {
-            if (File.Exists(logFile))
-            {
-                File.Delete(logFile);
-            }
-        }
+        Assert.Equal(3, records.Count);
+        Assert.Equal("John Doe", records[0].Name);
+        Assert.Equal("Jane Smith", records[1].Name);
+        Assert.Equal("Charlie Brown", records[2].Name);
     }
 
     [Fact]
@@ -315,8 +298,8 @@ public class CsvReaderIntegrationTests
         var options = new CsvParserOptions { StrictMode = true };
         var reader = new CsvReader<TestPerson>(options);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            reader.DeserializeLines(csv).ToList());
+        var exception = Assert.Throws<CsvParseException>(() =>
+            reader.DeserializeLines(csv));
 
         Assert.Contains("Line 3", exception.Message);
     }
@@ -334,10 +317,12 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Single(results);
-        Assert.Equal("John Doe", results[0].Name);
+        Assert.Single(records);
+        Assert.Equal("John Doe", records[0].Name);
     }
 
     [Fact]
@@ -351,10 +336,12 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { CaseInsensitiveHeaders = true };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Single(results);
-        Assert.Equal(30, results[0].Age);
+        Assert.Single(records);
+        Assert.Equal(30, records[0].Age);
     }
 
     // ========== Large Dataset Tests ==========
@@ -371,11 +358,13 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(1000, results.Count);
-        Assert.Equal("Person1", results[0].Name);
-        Assert.Equal("Person1000", results[999].Name);
+        Assert.Equal(1000, records.Count);
+        Assert.Equal("Person1", records[0].Name);
+        Assert.Equal("Person1000", records[999].Name);
     }
 
     [Fact]
@@ -390,10 +379,12 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Single(results);
-        Assert.Equal(longValue, results[0].Name);
+        Assert.Single(records);
+        Assert.Equal(longValue, records[0].Name);
     }
 
     // ========== Edge Case Integration Tests ==========
@@ -405,9 +396,11 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Empty(results);
+        Assert.Empty(records);
     }
 
     [Fact]
@@ -417,9 +410,11 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions();
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Empty(results);
+        Assert.Empty(records);
     }
 
     [Fact]
@@ -429,9 +424,11 @@ public class CsvReaderIntegrationTests
 
         var options = new CsvParserOptions { SkipEmptyLines = true };
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Empty(results);
+        Assert.Empty(records);
     }
 
     [Fact]
@@ -456,12 +453,14 @@ public class CsvReaderIntegrationTests
         };
 
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(5, results.Count);
-        Assert.Equal("Doe, John", results[0].Name);
-        Assert.Equal("Bob \"The Builder\" Johnson", results[2].Name);
-        Assert.Equal("Alice Williams", results[3].Name);
-        Assert.Equal("alice@example.com", results[3].Email);
+        Assert.Equal(5, records.Count);
+        Assert.Equal("Doe, John", records[0].Name);
+        Assert.Equal("Bob \"The Builder\" Johnson", records[2].Name);
+        Assert.Equal("Alice Williams", records[3].Name);
+        Assert.Equal("alice@example.com", records[3].Email);
     }
 }

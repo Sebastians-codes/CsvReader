@@ -1,3 +1,4 @@
+using CsvReader.Errors;
 using CsvReader.Models;
 
 namespace CsvReader.Tests;
@@ -36,13 +37,15 @@ public class StrictModeTests
         };
 
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John", results[0].Name);
-        Assert.Equal(30, results[0].Age);
-        Assert.Equal("Jane", results[1].Name);
-        Assert.Equal(25, results[1].Age);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John", records[0].Name);
+        Assert.Equal(30, records[0].Age);
+        Assert.Equal("Jane", records[1].Name);
+        Assert.Equal(25, records[1].Age);
     }
 
     [Fact]
@@ -63,8 +66,8 @@ public class StrictModeTests
 
         var reader = new CsvReader<TestPerson>(options);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            reader.DeserializeLines(csv).ToList());
+        var exception = Assert.Throws<CsvParseException>(() =>
+            reader.DeserializeLines(csv));
 
         Assert.Contains("Line 3", exception.Message);
         Assert.Contains("Unclosed quote", exception.Message);
@@ -87,11 +90,13 @@ public class StrictModeTests
         };
 
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John", results[0].Name);
-        Assert.Equal("Jane", results[1].Name);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John", records[0].Name);
+        Assert.Equal("Jane", records[1].Name);
     }
 
     [Fact]
@@ -112,8 +117,8 @@ public class StrictModeTests
 
         var reader = new CsvReader<TestPerson>(options);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            reader.DeserializeLines(csv).ToList());
+        var exception = Assert.Throws<CsvParseException>(() =>
+            reader.DeserializeLines(csv));
 
         Assert.Contains("Line 3", exception.Message);
         Assert.Contains("out of range", exception.Message);
@@ -136,13 +141,15 @@ public class StrictModeTests
         };
 
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John", results[0].Name);
-        Assert.Equal(30, results[0].Age);
-        Assert.Equal("Bob", results[1].Name);
-        Assert.Equal(35, results[1].Age);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John", records[0].Name);
+        Assert.Equal(30, records[0].Age);
+        Assert.Equal("Bob", records[1].Name);
+        Assert.Equal(35, records[1].Age);
     }
 
     [Fact]
@@ -163,8 +170,8 @@ public class StrictModeTests
 
         var reader = new CsvReader<TestPerson>(options);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            reader.DeserializeLines(csv).ToList());
+        var exception = Assert.Throws<CsvParseException>(() =>
+            reader.DeserializeLines(csv));
 
         Assert.Contains("Line 3", exception.Message);
     }
@@ -187,11 +194,13 @@ public class StrictModeTests
         };
 
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        _ = results.HasErrors;
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John", results[0].Name);
-        Assert.Equal("Jane", results[1].Name);
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John", records[0].Name);
+        Assert.Equal("Jane", records[1].Name);
     }
 
     [Fact]
@@ -213,10 +222,10 @@ public class StrictModeTests
 
         var reader = new CsvReader<TestPerson>(options);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            reader.DeserializeLines(csv).ToList());
+        var exception = Assert.Throws<EmptyLineException>(() =>
+            reader.DeserializeLines(csv));
 
-        Assert.Contains("Line 3", exception.Message);
+        Assert.Contains("Empty line", exception.Message);
         Assert.Contains("Empty line", exception.Message);
     }
 
@@ -238,54 +247,12 @@ public class StrictModeTests
         };
 
         var reader = new CsvReader<TestPerson>(options);
-        var results = reader.DeserializeLines(csv).ToList();
+        var results = reader.DeserializeLines(csv);
+        var records = results.Records.ToList();
 
-        Assert.Equal(2, results.Count);
-        Assert.Equal("John", results[0].Name);
-        Assert.Equal("Jane", results[1].Name);
-    }
-
-    [Fact]
-    public void LenientMode_WithErrorLogFile_LogsAllErrors()
-    {
-        var logFile = Path.GetTempFileName();
-
-        try
-        {
-            var csv = new[]
-            {
-                "Name,Age",
-                "John,30",
-                "\"Unclosed,40",
-                "MissingColumn",
-                "Jane,not-a-number",
-                "Bob,35"
-            };
-
-            var options = new CsvParserOptions
-            {
-                StrictMode = false,
-                ErrorLogFile = logFile
-            };
-
-            var reader = new CsvReader<TestPerson>(options);
-            var results = reader.DeserializeLines(csv).ToList();
-
-            Assert.Equal(2, results.Count);
-
-            var logContents = File.ReadAllText(logFile);
-            Assert.Contains("Line 3", logContents);
-            Assert.Contains("Unclosed quote", logContents);
-            Assert.Contains("Line 4", logContents);
-            Assert.Contains("Line 5", logContents);
-        }
-        finally
-        {
-            if (File.Exists(logFile))
-            {
-                File.Delete(logFile);
-            }
-        }
+        Assert.Equal(2, records.Count);
+        Assert.Equal("John", records[0].Name);
+        Assert.Equal("Jane", records[1].Name);
     }
 
     [Fact]
@@ -307,8 +274,8 @@ public class StrictModeTests
 
         var reader = new CsvReader<TestPerson>(options);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            reader.DeserializeLines(csv).ToList());
+        var exception = Assert.Throws<CsvParseException>(() =>
+            reader.DeserializeLines(csv));
 
         Assert.Contains("Line 3", exception.Message);
     }

@@ -1,10 +1,46 @@
 using System.Reflection;
 using CsvReader.Mapping;
 using CsvReader.Core;
+using CsvReader.Errors;
 using CsvReader.Models;
 
 namespace CsvReader;
 
+/// <summary>
+/// A CSV reader that deserializes CSV data into strongly-typed objects.
+/// </summary>
+/// <typeparam name="T">The type to deserialize CSV rows into. Must implement <see cref="IMapped"/> and have a parameterless constructor.</typeparam>
+/// <remarks>
+/// This CSV reader supports:
+/// - Custom delimiters (comma, semicolon, tab, pipe, etc.)
+/// - Quoted fields with escaped quotes
+/// - Header row mapping or index-based mapping
+/// - Case-insensitive header matching
+/// - Field trimming
+/// - Empty line handling
+/// - Strict and lenient error handling modes
+/// - Custom boolean value mappings
+/// 
+/// Error Handling Modes:
+/// - Strict Mode (StrictMode = true): Throws exceptions immediately on first error
+/// - Lenient Mode (StrictMode = false): Collects errors and continues parsing valid lines
+/// </remarks>
+/// <example>
+/// <code>
+/// // Basic usage with default options
+/// var options = new CsvParserOptions();
+/// var reader = new CsvReader&lt;Person&gt;(options);
+/// var results = reader.DeserializeLines(csvLines);
+/// 
+/// if (results.HasErrors) 
+/// {
+///     foreach (var error in results.Errors)
+///         Console.WriteLine($"Line {error.LineNumber}: {error.ErrorMessage}");
+/// }
+/// 
+/// var people = results.Records;
+/// </code>
+/// </example>
 public class CsvReader<T>(
     CsvParserOptions? options = null
     ) where T : IMapped, new()
@@ -15,14 +51,24 @@ public class CsvReader<T>(
     private readonly TypeConverter _typeConverter = new();
     private readonly Parser _parser = new();
 
-    public IEnumerable<T> ParseFile(string filePath)
+    /// <summary>
+    /// Deserializes CSV lines into strongly-typed objects.
+    /// </summary>
+    /// <param name="lines">The CSV lines to parse. First line may be a header depending on HasHeaderRow option.</param>
+    /// <returns>
+    /// A <see cref="CsvParseResult{T}"/> containing successfully parsed records and any errors encountered.
+    /// </returns>
+    /// <exception cref="CsvParseException">
+    /// Thrown in strict mode when any parsing error occurs (unclosed quotes, type conversion errors, etc.).
+    /// </exception>
+    /// <remarks>
+    /// In strict mode, this method throws on the first error encountered.
+    /// In lenient mode, errors are collected in the result and parsing continues.
+    /// </remarks>
+    public CsvParseResult<T> DeserializeLines(IEnumerable<string> lines)
     {
-        var lines = File.ReadLines(filePath);
-        return DeserializeLines(lines);
-    }
-
-    public IEnumerable<T> DeserializeLines(IEnumerable<string> lines)
-    {
+        var records = new List<T>();
+        var errors = new List<CsvParseError>();
         Dictionary<string, int>? headerMap = null;
         bool isFirstLine = true;
         int lineNumber = 0;
@@ -40,10 +86,10 @@ public class CsvReader<T>(
 
                 if (_options.StrictMode)
                 {
-                    throw new InvalidOperationException($"Line {lineNumber}: Empty line encountered");
+                    throw new EmptyLineException(lineNumber);
                 }
 
-                LogError(lineNumber, line, "Empty line");
+                errors.Add(new CsvParseError(lineNumber, line, "Empty line"));
                 continue;
             }
 
@@ -52,21 +98,21 @@ public class CsvReader<T>(
             {
                 fields = _parser.ParseLine(line, _options.Delimiter);
             }
-            catch (FormatException ex)
+            catch (CsvParseException ex)
             {
                 if (_options.StrictMode)
                 {
-                    throw new InvalidOperationException(
-                        $"Line {lineNumber}: {ex.Message}", ex);
+                    throw new CsvParseException(
+                        $"Line {lineNumber}: {ex.Message}", lineNumber, ex);
                 }
 
-                LogError(lineNumber, line, ex.Message);
+                errors.Add(new CsvParseError(lineNumber, line, ex.Message));
                 continue;
             }
 
             if (_options.TrimFields)
             {
-                fields = fields.Select(f => f.Trim()).ToArray();
+                fields = [.. fields.Select(f => f.Trim())];
             }
 
             if (isFirstLine && _options.HasHeaderRow)
@@ -81,22 +127,24 @@ public class CsvReader<T>(
             T obj;
             try
             {
-                obj = DeserializeLine(fields, headerMap);
+                obj = DeserializeLine(fields, headerMap, lineNumber);
             }
-            catch (Exception ex)
+            catch (CsvParseException ex)
             {
                 if (_options.StrictMode)
                 {
-                    throw new InvalidOperationException(
-                        $"Line {lineNumber}: {ex.Message}", ex);
+                    throw new CsvParseException(
+                        $"Line {lineNumber}: {ex.Message}", lineNumber, ex);
                 }
 
-                LogError(lineNumber, line, ex.Message);
+                errors.Add(new CsvParseError(lineNumber, line, ex.Message));
                 continue;
             }
 
-            yield return obj;
+            records.Add(obj);
         }
+
+        return new CsvParseResult<T>(records, errors, _options.StrictMode);
     }
 
     private Dictionary<string, int> BuildHeaderMap(string[] headers)
@@ -114,7 +162,7 @@ public class CsvReader<T>(
         return map;
     }
 
-    private T DeserializeLine(string[] fields, Dictionary<string, int>? headerMap)
+    private T DeserializeLine(string[] fields, Dictionary<string, int>? headerMap, int lineNumber)
     {
         var obj = new T();
         var type = typeof(T);
@@ -125,11 +173,11 @@ public class CsvReader<T>(
             ColumnMapping columnMapping = mapping.Value;
 
             PropertyInfo? property = type.GetProperty(propertyName) ??
-                throw new InvalidOperationException($"Property '{propertyName}' not found on type {type.Name}");
+                throw new PropertyNotFoundException(propertyName, type);
 
             int columnIndex = _mappingResolver.ResolveColumnIndex(columnMapping, headerMap);
 
-            _mappingResolver.ValidateColumnIndex(columnIndex, fields.Length);
+            _mappingResolver.ValidateColumnIndex(columnIndex, fields.Length, _columnMapping.Count, _options.StrictMode, lineNumber);
 
             string fieldValue = fields[columnIndex];
 
@@ -138,12 +186,13 @@ public class CsvReader<T>(
                 object? convertedValue = _typeConverter.ConvertValue(fieldValue, property.PropertyType, _options);
                 property.SetValue(obj, convertedValue);
             }
+            catch (TypeConversionException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    $"Failed to convert column '{columnMapping.ColumnIdentifier}' (value: '{fieldValue}') " +
-                    $"to property '{propertyName}' of type {property.PropertyType.Name}: {ex.Message}",
-                    ex);
+                throw new TypeConversionException(fieldValue, property.PropertyType, ex, propertyName);
             }
         }
 
@@ -167,22 +216,5 @@ public class CsvReader<T>(
         }
 
         return mapping;
-    }
-
-    private void LogError(int lineNumber, string line, string error)
-    {
-        if (string.IsNullOrEmpty(_options.ErrorLogFile))
-        {
-            return;
-        }
-
-        try
-        {
-            var logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Line {lineNumber}: {error}\n";
-            File.AppendAllText(_options.ErrorLogFile, logEntry);
-        }
-        catch
-        {
-        }
     }
 }

@@ -1,4 +1,5 @@
 using CsvReader.Core;
+using CsvReader.Errors;
 
 namespace CsvReader.Tests;
 
@@ -260,7 +261,7 @@ public class ParserTests
     [Fact]
     public void ParseLine_UnclosedQuoteAtStart_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<UnclosedQuoteException>(() =>
             _parser.ParseLine("\"unclosed"));
 
         Assert.Contains("Unclosed quote", exception.Message);
@@ -269,7 +270,7 @@ public class ParserTests
     [Fact]
     public void ParseLine_UnclosedQuoteInMiddle_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<UnclosedQuoteException>(() =>
             _parser.ParseLine("normal,\"unclosed,value"));
 
         Assert.Contains("Unclosed quote", exception.Message);
@@ -278,7 +279,7 @@ public class ParserTests
     [Fact]
     public void ParseLine_UnclosedQuoteAtEnd_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<UnclosedQuoteException>(() =>
             _parser.ParseLine("normal,\"unclosed"));
 
         Assert.Contains("Unclosed quote", exception.Message);
@@ -287,7 +288,7 @@ public class ParserTests
     [Fact]
     public void ParseLine_OddNumberOfQuotes_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<UnclosedQuoteException>(() =>
             _parser.ParseLine("\"quoted\" text with \" extra quote"));
 
         Assert.Contains("Unclosed quote", exception.Message);

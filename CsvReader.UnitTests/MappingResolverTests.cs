@@ -1,3 +1,4 @@
+using CsvReader.Errors;
 using CsvReader.Mapping;
 using CsvReader.Models;
 
@@ -35,7 +36,7 @@ public class MappingResolverTests
         };
         var mapping = new ColumnMapping("Email", -1);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<ColumnNotFoundException>(() =>
             _resolver.ResolveColumnIndex(mapping, headerMap));
 
         Assert.Contains("Column 'Email' not found", exception.Message);
@@ -134,7 +135,7 @@ public class MappingResolverTests
     {
         var mapping = new ColumnMapping("Name", -1);
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<ColumnMappingException>(() =>
             _resolver.ResolveColumnIndex(mapping, null));
 
         Assert.Contains("must be numeric", exception.Message);
@@ -157,7 +158,7 @@ public class MappingResolverTests
     public void ValidateColumnIndex_ValidIndex_DoesNotThrow()
     {
         var exception = Record.Exception(() =>
-            _resolver.ValidateColumnIndex(0, 3));
+            _resolver.ValidateColumnIndex(0, 3, 3, false, 1));
 
         Assert.Null(exception);
     }
@@ -166,7 +167,7 @@ public class MappingResolverTests
     public void ValidateColumnIndex_IndexZero_WithOneField_DoesNotThrow()
     {
         var exception = Record.Exception(() =>
-            _resolver.ValidateColumnIndex(0, 1));
+            _resolver.ValidateColumnIndex(0, 1, 1, false, 1));
 
         Assert.Null(exception);
     }
@@ -175,7 +176,7 @@ public class MappingResolverTests
     public void ValidateColumnIndex_LastIndex_DoesNotThrow()
     {
         var exception = Record.Exception(() =>
-            _resolver.ValidateColumnIndex(4, 5));
+            _resolver.ValidateColumnIndex(4, 5, 5, false, 1));
 
         Assert.Null(exception);
     }
@@ -183,8 +184,8 @@ public class MappingResolverTests
     [Fact]
     public void ValidateColumnIndex_NegativeIndex_ThrowsIndexOutOfRangeException()
     {
-        var exception = Assert.Throws<IndexOutOfRangeException>(() =>
-            _resolver.ValidateColumnIndex(-1, 3));
+        var exception = Assert.Throws<ColumnIndexOutOfRangeException>(() =>
+            _resolver.ValidateColumnIndex(-1, 3, 3, false, 1));
 
         Assert.Contains("out of range", exception.Message);
         Assert.Contains("-1", exception.Message);
@@ -193,8 +194,8 @@ public class MappingResolverTests
     [Fact]
     public void ValidateColumnIndex_IndexEqualToFieldCount_ThrowsIndexOutOfRangeException()
     {
-        var exception = Assert.Throws<IndexOutOfRangeException>(() =>
-            _resolver.ValidateColumnIndex(3, 3));
+        var exception = Assert.Throws<ColumnIndexOutOfRangeException>(() =>
+            _resolver.ValidateColumnIndex(3, 3, 3, false, 1));
 
         Assert.Contains("out of range", exception.Message);
         Assert.Contains("3", exception.Message);
@@ -203,8 +204,8 @@ public class MappingResolverTests
     [Fact]
     public void ValidateColumnIndex_IndexGreaterThanFieldCount_ThrowsIndexOutOfRangeException()
     {
-        var exception = Assert.Throws<IndexOutOfRangeException>(() =>
-            _resolver.ValidateColumnIndex(5, 3));
+        var exception = Assert.Throws<ColumnIndexOutOfRangeException>(() =>
+            _resolver.ValidateColumnIndex(5, 3, 3, false, 1));
 
         Assert.Contains("out of range", exception.Message);
         Assert.Contains("has 3 columns", exception.Message);
@@ -213,8 +214,8 @@ public class MappingResolverTests
     [Fact]
     public void ValidateColumnIndex_ZeroFields_AnyIndex_ThrowsIndexOutOfRangeException()
     {
-        var exception = Assert.Throws<IndexOutOfRangeException>(() =>
-            _resolver.ValidateColumnIndex(0, 0));
+        var exception = Assert.Throws<ColumnIndexOutOfRangeException>(() =>
+            _resolver.ValidateColumnIndex(0, 0, 0, false, 1));
 
         Assert.Contains("out of range", exception.Message);
         Assert.Contains("has 0 columns", exception.Message);
@@ -267,7 +268,7 @@ public class MappingResolverTests
     public void ValidateColumnIndex_LargeFieldCount_ValidIndex_DoesNotThrow()
     {
         var exception = Record.Exception(() =>
-            _resolver.ValidateColumnIndex(999, 1000));
+            _resolver.ValidateColumnIndex(999, 1000, 1000, false, 1));
 
         Assert.Null(exception);
     }
@@ -275,8 +276,8 @@ public class MappingResolverTests
     [Fact]
     public void ValidateColumnIndex_SingleField_IndexOne_ThrowsException()
     {
-        var exception = Assert.Throws<IndexOutOfRangeException>(() =>
-            _resolver.ValidateColumnIndex(1, 1));
+        var exception = Assert.Throws<ColumnIndexOutOfRangeException>(() =>
+            _resolver.ValidateColumnIndex(1, 1, 1, false, 1));
 
         Assert.Contains("out of range", exception.Message);
     }
@@ -297,7 +298,7 @@ public class MappingResolverTests
         var index = _resolver.ResolveColumnIndex(mapping, headerMap);
 
         var exception = Record.Exception(() =>
-            _resolver.ValidateColumnIndex(index, 3));
+            _resolver.ValidateColumnIndex(index, 3, 3, false, 1));
 
         Assert.Equal(1, index);
         Assert.Null(exception);
@@ -311,7 +312,7 @@ public class MappingResolverTests
         var index = _resolver.ResolveColumnIndex(mapping, null);
 
         var exception = Record.Exception(() =>
-            _resolver.ValidateColumnIndex(index, 3));
+            _resolver.ValidateColumnIndex(index, 3, 3, false, 1));
 
         Assert.Equal(1, index);
         Assert.Null(exception);
@@ -324,8 +325,8 @@ public class MappingResolverTests
 
         var index = _resolver.ResolveColumnIndex(mapping, null);
 
-        var exception = Assert.Throws<IndexOutOfRangeException>(() =>
-            _resolver.ValidateColumnIndex(index, 3));
+        var exception = Assert.Throws<ColumnIndexOutOfRangeException>(() =>
+            _resolver.ValidateColumnIndex(index, 3, 3, false, 1));
 
         Assert.Equal(5, index);
         Assert.Contains("out of range", exception.Message);

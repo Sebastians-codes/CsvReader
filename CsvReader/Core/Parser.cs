@@ -1,4 +1,5 @@
 using System.Text;
+using CsvReader.Errors;
 
 namespace CsvReader.Core;
 
@@ -39,7 +40,7 @@ public class Parser
 
         if (inQuotes)
         {
-            throw new FormatException($"Unclosed quote in CSV line: {line}");
+            throw new UnclosedQuoteException(line);
         }
 
         fields.Add(currentField.ToString());

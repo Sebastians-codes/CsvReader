@@ -1,6 +1,7 @@
+using CsvReader.Errors;
 using CsvReader.Models;
 
-namespace CsvReader.Core;
+namespace CsvReader.Mapping;
 
 public class TypeConverter
 {
@@ -18,8 +19,7 @@ public class TypeConverter
                 return string.Empty;
             }
 
-            throw new InvalidOperationException(
-                $"Cannot convert empty string to non-nullable type {targetType.Name}");
+            throw new TypeConversionException("", targetType);
         }
 
         Type underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
@@ -37,14 +37,18 @@ public class TypeConverter
                 nameof(Double) => double.Parse(value),
                 nameof(Decimal) => decimal.Parse(value),
                 nameof(Boolean) => ParseBoolean(value, options),
-                _ => throw new NotSupportedException(
-                    $"Type {underlyingType.Name} is not supported")
+                _ => underlyingType.IsEnum 
+                    ? Enum.Parse(underlyingType, value, ignoreCase: true)
+                    : throw new TypeConversionException(value, underlyingType)
             };
         }
         catch (FormatException ex)
         {
-            throw new FormatException(
-                $"Failed to convert '{value}' to type {underlyingType.Name}", ex);
+            throw new TypeConversionException(value, underlyingType, ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new TypeConversionException(value, underlyingType, ex);
         }
     }
 
@@ -60,13 +64,7 @@ public class TypeConverter
             return false;
         }
 
-        var truthyList = string.Join(", ", options.BooleanTruthyValues.Select(v => $"\"{v}\""));
-        var falsyList = string.Join(", ", options.BooleanFalsyValues.Select(v => $"\"{v}\""));
-
-        throw new FormatException(
-            $"Cannot convert '{value}' to Boolean. " +
-            $"Expected truthy values: {truthyList} " +
-            $"or falsy values: {falsyList}");
+        throw new TypeConversionException(value, typeof(bool));
     }
 
     public static bool IsNullableType(Type type)

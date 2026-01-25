@@ -1,3 +1,4 @@
+using CsvReader.Errors;
 using CsvReader.Models;
 
 namespace CsvReader.Mapping;
@@ -12,8 +13,7 @@ public class MappingResolver
         {
             if (!headerMap.TryGetValue(mapping.ColumnIdentifier, out int index))
             {
-                throw new InvalidOperationException(
-                    $"Column '{mapping.ColumnIdentifier}' not found in CSV headers");
+                throw new ColumnNotFoundException(mapping.ColumnIdentifier, headerMap.Keys.ToArray());
             }
 
             return index;
@@ -26,19 +26,25 @@ public class MappingResolver
 
         if (!int.TryParse(mapping.ColumnIdentifier, out int columnIndex))
         {
-            throw new InvalidOperationException(
-                $"Column identifier '{mapping.ColumnIdentifier}' must be numeric when HasHeaderRow is false");
+            throw new ColumnMappingException(
+                $"Column identifier '{mapping.ColumnIdentifier}' must be numeric when HasHeaderRow is false",
+                mapping.ColumnIdentifier);
         }
 
         return columnIndex;
     }
 
-    public void ValidateColumnIndex(int columnIndex, int fieldCount)
+    public void ValidateColumnIndex(int columnIndex, int fieldCount, int mappingCount, bool strictMode, int lineNumber)
     {
         if (columnIndex < 0 || columnIndex >= fieldCount)
         {
-            throw new IndexOutOfRangeException(
-                $"Column index {columnIndex} is out of range. Row has {fieldCount} columns.");
+            throw new ColumnIndexOutOfRangeException(columnIndex, fieldCount, lineNumber);
+        }
+
+        if (strictMode && fieldCount > mappingCount)
+        {
+            throw new ColumnMappingException(
+                $"Amount of fields {fieldCount} exceeds the number of mappings ({mappingCount}).");
         }
     }
 }

@@ -1,4 +1,5 @@
-using CsvReader.Core;
+using CsvReader.Errors;
+using CsvReader.Mapping;
 using CsvReader.Models;
 
 namespace CsvReader.UnitTests;
@@ -63,20 +64,20 @@ public class TypeConverterTests
     [Fact]
     public void ConvertValue_InvalidIntegerString_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("not-a-number", typeof(int), _defaultOptions));
 
-        Assert.Contains("Failed to convert", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
         Assert.Contains("Int32", exception.Message);
     }
 
     [Fact]
     public void ConvertValue_EmptyStringToInt_ThrowsInvalidOperationException()
     {
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("", typeof(int), _defaultOptions));
 
-        Assert.Contains("Cannot convert empty string", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
     }
 
     // ========== Long Conversion Tests ==========
@@ -210,10 +211,10 @@ public class TypeConverterTests
     [Fact]
     public void ConvertValue_InvalidBooleanString_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("maybe", typeof(bool), _defaultOptions));
 
-        Assert.Contains("Failed to convert 'maybe'", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
     }
 
     [Fact]
@@ -245,10 +246,10 @@ public class TypeConverterTests
     [Fact]
     public void ConvertValue_MultipleCharacters_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("AB", typeof(char), _defaultOptions));
 
-        Assert.Contains("Failed to convert", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
     }
 
     // ========== DateTime Conversion Tests ==========
@@ -273,10 +274,10 @@ public class TypeConverterTests
     [Fact]
     public void ConvertValue_InvalidDateTime_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("not-a-date", typeof(DateTime), _defaultOptions));
 
-        Assert.Contains("Failed to convert", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
     }
 
     // ========== Guid Conversion Tests ==========
@@ -293,10 +294,81 @@ public class TypeConverterTests
     [Fact]
     public void ConvertValue_InvalidGuid_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("not-a-guid", typeof(Guid), _defaultOptions));
 
-        Assert.Contains("Failed to convert", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
+    }
+
+    // ========== Enum Conversion Tests ==========
+
+    public enum TestStatus
+    {
+        Active,
+        Inactive,
+        Pending
+    }
+
+    public enum TestPriority
+    {
+        Low = 1,
+        Medium = 2,
+        High = 3
+    }
+
+    [Fact]
+    public void ConvertValue_ValidEnumString_ReturnsEnum()
+    {
+        var result = _converter.ConvertValue("Active", typeof(TestStatus), _defaultOptions);
+
+        Assert.Equal(TestStatus.Active, result);
+    }
+
+    [Fact]
+    public void ConvertValue_EnumCaseInsensitive_ReturnsEnum()
+    {
+        var result1 = _converter.ConvertValue("active", typeof(TestStatus), _defaultOptions);
+        var result2 = _converter.ConvertValue("PENDING", typeof(TestStatus), _defaultOptions);
+        var result3 = _converter.ConvertValue("InAcTiVe", typeof(TestStatus), _defaultOptions);
+
+        Assert.Equal(TestStatus.Active, result1);
+        Assert.Equal(TestStatus.Pending, result2);
+        Assert.Equal(TestStatus.Inactive, result3);
+    }
+
+    [Fact]
+    public void ConvertValue_EnumNumericValue_ReturnsEnum()
+    {
+        var result1 = _converter.ConvertValue("1", typeof(TestPriority), _defaultOptions);
+        var result2 = _converter.ConvertValue("3", typeof(TestPriority), _defaultOptions);
+
+        Assert.Equal(TestPriority.Low, result1);
+        Assert.Equal(TestPriority.High, result2);
+    }
+
+    [Fact]
+    public void ConvertValue_InvalidEnumValue_ThrowsException()
+    {
+        var exception = Assert.Throws<TypeConversionException>(() =>
+            _converter.ConvertValue("InvalidStatus", typeof(TestStatus), _defaultOptions));
+
+        Assert.Contains("Cannot convert value", exception.Message);
+    }
+
+    [Fact]
+    public void ConvertValue_EmptyStringToNullableEnum_ReturnsNull()
+    {
+        var result = _converter.ConvertValue("", typeof(TestStatus?), _defaultOptions);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void ConvertValue_ValidValueToNullableEnum_ReturnsEnum()
+    {
+        var result = _converter.ConvertValue("Pending", typeof(TestStatus?), _defaultOptions);
+
+        Assert.Equal(TestStatus.Pending, result);
     }
 
     // ========== Nullable Type Tests ==========
@@ -378,10 +450,10 @@ public class TypeConverterTests
     [Fact]
     public void ConvertValue_UnsupportedType_ThrowsNotSupportedException()
     {
-        var exception = Assert.Throws<NotSupportedException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             _converter.ConvertValue("test", typeof(System.Drawing.Point), _defaultOptions));
 
-        Assert.Contains("not supported", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
     }
 
     // ========== ParseBoolean Tests ==========
@@ -414,12 +486,10 @@ public class TypeConverterTests
     [Fact]
     public void ParseBoolean_InvalidValue_ThrowsFormatException()
     {
-        var exception = Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<TypeConversionException>(() =>
             TypeConverter.ParseBoolean("invalid", _defaultOptions));
 
-        Assert.Contains("Cannot convert 'invalid' to Boolean", exception.Message);
-        Assert.Contains("truthy values", exception.Message);
-        Assert.Contains("falsy values", exception.Message);
+        Assert.Contains("Cannot convert value", exception.Message);
     }
 
     [Fact]
